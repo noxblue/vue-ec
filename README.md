@@ -1,5 +1,6 @@
 # Charles-萌寵電商ec網站
 ## 使用技術：
+
 1.Vue-CLI(Vue、VueRouter、EventBus)
 2.JavaScript(ES6)
 3.Bootstrap4
