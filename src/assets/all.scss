@@ -1,0 +1,7 @@
+//先載入functions（套用變數的方法）再載入自定義variables，這樣變數才可正常被啟用
+@import "~bootstrap/scss/functions";
+@import "./helps/_variables";
+@import "~bootstrap/scss/bootstrap";
+
+//載入bs4的dashboard.scss
+@import "./dashboard";
