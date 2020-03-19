@@ -46,12 +46,16 @@ export default {
 <style lang="scss" scoped>
 .bg-cover {
   background-size: cover;
-  background-position: center center;
+  background-position: center calc(-90vh / 3);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
 }
 .hero-image {
   //   background-image: url("https://images.unsplash.com/photo-1450778869180-41d0601e046e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2650&q=80");
   background-image: url("https://images.unsplash.com/photo-1570824104453-508955ab713e?ixlib=rb-1.2.1&auto=format&fit=crop&w=2713&q=80");
-  height: 320px;
+  width: 100%;
+  // height: 320px;
+  height: calc(100vh / 3);
 }
 .hero-text {
   font-size: 36px;
