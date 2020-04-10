@@ -1,5 +1,6 @@
 <template>
   <div>
+    <loading :active.sync="isLoading"></loading>
     <!-- 以自身結束的標籤，插入Navbar元件 -->
     <Navbar />
     <!-- 設定Alert元件顯示位置 -->
@@ -23,6 +24,7 @@ import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 //導入AlertMessage，以供子元件進行呼叫
 import Alert from "./AlertMessage";
+import {mapActions,mapGetters} from 'vuex'
 
 export default {
   //將載入元件以components啟用，以在上方透過元件標籤的方式插入
@@ -31,6 +33,9 @@ export default {
     Sidebar,
     //將Alert元件啟用
     Alert,
+  },
+  computed:{
+    ...mapGetters(['isLoading'])
   }
 };
 </script>

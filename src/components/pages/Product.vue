@@ -6,7 +6,13 @@
     <ClientNavbar></ClientNavbar>
     <Alert></Alert>
     <div class="container mt-4">
-        <div class="row"><div class="col"><button class="btn btn-light" @click="goBack"><i class="fas fa-2x fa-reply"></i></button></div></div>
+      <div class="row">
+        <div class="col">
+          <button class="btn btn-light" @click="goBack">
+            <i class="fas fa-2x fa-reply"></i>
+          </button>
+        </div>
+      </div>
       <div class="row">
         <div class="col-md-6 product p-3">
           <div class="row">
@@ -77,28 +83,28 @@
         </div>
       </div>
     </div>
-    
   </div>
 </template>
 
 <script>
 import ClientNavbar from "../ClientNavbar";
 import Alert from "../AlertMessage";
-
+import { mapActions, mapGetters } from "vuex";
 
 export default {
   //啟用元件
   components: {
     ClientNavbar,
-    Alert,
-
+    Alert
   },
   data() {
     return {
       productId: "", //存從網址取得的產品id
-      isLoading: false, //判斷資料loading中
       product: {} //存取回的產品資料
     };
+  },
+  computed: {
+    ...mapGetters(["isLoading"]),
   },
   methods: {
     //取得單一產品資訊，API需要產品id，在點選時傳入從網址存的id值，預設數量num為1
@@ -106,42 +112,31 @@ export default {
       const vm = this;
       //設定api路徑將id帶入
       const api = `${process.env.APIPATH}/api/${process.env.CUSTOMPATH}/product/${id}`;
-      vm.isLoading = true;
+      // vm.isLoading = true;
+      vm.$store.dispatch("updateLoading", true); //呼叫vuex的actions
       this.$http.get(api).then(response => {
         //用console.log檢查取回的資料格式
-        console.log(response.data);
+        // console.log(response.data);
         //將取回資料中的product存入data中的product
         vm.product = response.data.product;
         vm.$set(vm.product, "num", num); //設定產品數量，為傳入則預設值為1
-        vm.isLoading = false;
-        console.log(vm.product);
+        // vm.isLoading = false;
+        vm.$store.dispatch("updateLoading", false); //呼叫vuex的actions
+        // console.log(vm.product);
       });
     },
     //將產品加入購物車，API需要產品id、數量qty，先將qty傳入值設預設值為1，未傳入時則為1
     addtoCart(id, qty = 1) {
       const vm = this;
-      vm.isLoading = true;
-      //設定api路徑將id帶入
-      const api = `${process.env.APIPATH}/api/${process.env.CUSTOMPATH}/cart`;
-      //將取得值存為傳出時的物件格式（傳出格式為{data:{'product_id':id,'qty':數量}}
-      const cart = {
+      const cartItem = {
         product_id: id,
         qty
       };
-      //將資料組合成API在post時的格式後，傳出
-      this.$http.post(api, { data: cart }).then(response => {
-        //用console.log檢查取回的資料格式
-        console.log(response.data);
-        vm.isLoading = false;
-        //上方加入購物車按鈕處再加上觸發與傳送值即可執行本function
-        //回到前一頁
-        vm.goBack();
-        //成功時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
-        vm.$bus.$emit("message:push", response.data.message, "success");
-      });
+      vm.$store.dispatch('cartModule/addtoCart',cartItem)
+      vm.goBack();
     },
-    goBack(){
-        this.$router.back()
+    goBack() {
+      this.$router.back();
     }
   },
   created() {

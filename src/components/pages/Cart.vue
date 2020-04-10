@@ -22,25 +22,25 @@
           <div class="row justify-content-around mb-3">
             <div
               class="order-status col-3 d-flex justify-content-center align-items-center py-1"
-              :class="{'active':status.check=='cart'}"
+              :class="{'active':status=='cart'}"
             >
               <span>確認訂單資訊</span>
             </div>
             <div
               class="order-status col-3 d-flex justify-content-center align-items-center py-1"
-              :class="{'active':status.check=='userdata'}"
+              :class="{'active':status=='userdata'}"
             >
               <span>訂購人資訊</span>
             </div>
             <div
               class="order-status col-3 d-flex justify-content-center align-items-center py-1"
-              :class="{'active':status.check=='checkout'}"
+              :class="{'active':status=='checkout'}"
             >
               <span>進行付款</span>
             </div>
           </div>
           <!-- 購物車內容 -->
-          <div class="row" v-if="status.check!=='checkout'">
+          <div class="row" v-if="status!=='checkout'">
             <div class="card w-100">
               <div
                 class="card-header"
@@ -59,7 +59,7 @@
               <div
                 id="collapseCart"
                 class="collapse"
-                :class="{'show':status.check=='cart'}"
+                :class="{'show':status=='cart'}"
                 aria-labelledby="headingOne"
               >
                 <div class="card-body">
@@ -109,7 +109,7 @@
             </div>
           </div>
           <!-- 確認購物車階段顯示內容 -->
-          <div v-if="status.check=='cart'">
+          <div v-if="status=='cart'">
             <div class="row">
               <div class="input-group mb-3 input-group-sm mt-3">
                 <!-- input雙向綁定data中的coupon_code -->
@@ -125,11 +125,11 @@
               </div>
             </div>
             <div class="row justify-content-end">
-              <button class="btn btn-primary" @click="goCheckStatus('userdata')">下一步</button>
+              <button class="btn btn-primary" @click="changeStatus('userdata')">下一步</button>
             </div>
           </div>
           <!-- 輸入訂購人資料階段顯示內容 -->
-          <div v-if="status.check=='userdata'">
+          <div v-if="status=='userdata'">
             <div class="row justify-content-center my-3">
               <h4>請輸入訂購人資料</h4>
             </div>
@@ -203,14 +203,14 @@
                   ></textarea>
                 </div>
                 <div class="row justify-content-between px-3">
-                  <button class="btn btn-light" @click="goCheckStatus('cart')">回前一步</button>
+                  <button class="btn btn-light" @click="changeStatus('cart')">回前一步</button>
                   <button type="submit" class="btn btn-danger">送出訂單</button>
                 </div>
               </form>
             </ValidationObserver>
           </div>
           <!-- 付款階段顯示內容 -->
-          <div v-if="status.check=='checkout'">
+          <div v-if="status=='checkout'">
             <div class="row justify-content-center my-3">
               <h4>訂單完成待付款</h4>
             </div>
@@ -284,6 +284,7 @@
 import $ from "jquery";
 import ClientNavbar from "../ClientNavbar";
 import Alert from "../AlertMessage";
+import { mapActions, mapGetters } from "vuex";
 export default {
   components: {
     ClientNavbar,
@@ -291,11 +292,6 @@ export default {
   },
   data() {
     return {
-      isLoading: false,
-      status: {
-        check: "cart" //記錄結帳進度，分別為cart、userdata、checkout
-      },
-      cart: {}, //存購物車資料
       coupon_code: "", //存折價券名稱
       //設定供訂單送出時儲存的訂單相關資訊欄位，用來送出
       form: {
@@ -306,147 +302,80 @@ export default {
           address: ""
         },
         message: ""
-      },
-      orderId: "", //完成訂單時取得訂單id
-      order: {
-        user: {}
       }
     };
   },
+  computed: {
+    ...mapGetters(["isLoading"]),
+    ...mapGetters("cartModule", ["cart", "status", "orderId", "order"])
+  },
   methods: {
-    //取得購物車列表
-    getCart() {
-      const vm = this;
-      //設定api路徑
-      const api = `${process.env.APIPATH}/api/${process.env.CUSTOMPATH}/cart`;
-      this.$http.get(api).then(response => {
-        //用console.log檢查取回的資料格式
-        console.log(response.data);
-        vm.cart = response.data.data; //存入data中的cart
-        console.log(vm.cart.carts.length);
-      });
-    },
     //刪除購物車項目(傳入要刪除項目的id)
     removeCartItem(id) {
-      //設定api路徑將id帶入
-      const api = `${process.env.APIPATH}/api/${process.env.CUSTOMPATH}/cart/${id}`;
-      //要用data接資料前先設定vm=this，避免this的指向錯誤
       const vm = this;
-      this.$http.delete(api).then(response => {
-        //用console.log檢查取回的資料格式
-        console.log(response.data);
-        //刪除後重新取得購物車列表資料，重新渲染
-        vm.getCart();
-        //成功時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
-        vm.$bus.$emit("message:push", response.data.message, "success");
-        //重新渲染Navbar
-        vm.updateClientNav();
-      });
+      vm.$store.dispatch("cartModule/removeCartItem", id);
     },
+
     //使用者送出使用優惠碼時執行傳送code給API
     addCouponCode() {
-      const api = `${process.env.APIPATH}/api/${process.env.CUSTOMPATH}/coupon`;
       const vm = this;
       //將資料存為API所需要的格式
       const coupon = {
         code: vm.coupon_code
       };
-      vm.isLoading = true; //開啟vue-loading-overlay的效果
-      this.$http.post(api, { data: coupon }).then(response => {
-        //用console.log檢查取回的資料格式
-        console.log(response.data);
-        if (response.data.success) {
-          //成功時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
-          vm.$bus.$emit("message:push", response.data.message, "success");
-        } else {
-          //失敗時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
-          vm.$bus.$emit("message:push", response.data.message, "danger");
-        }
-        vm.isLoading = false; //關閉vue-loading-overlay的效果
-        //重新取得購物車列表資料，重新渲染(成功時API資料庫cart的資料會改，重新取得以重新渲染)
-        vm.getCart();
-        //重新渲染Navbar
-        vm.updateClientNav();
-      });
+      vm.$store.dispatch("cartModule/addCouponCode", coupon);
     },
+
     //執行送出訂單結帳資料（會將購物車清空）
     createOrder() {
       const vm = this;
-      const api = `${process.env.APIPATH}/api/${process.env.CUSTOMPATH}/order`;
-      //將要傳送的資料存成order變數
-      const order = vm.form;
-      //vee-validate的3.x版以改成用ValidationObserver管理，當整張表單通過驗證時才執行submit觸發的function
-      this.$http.post(api, { data: order }).then(response => {
-        //用console.log檢查取回的資料格式
-        console.log("訂單建立結果", response.data.message);
-        if (response.data.success) {
-          //呼叫子元件clientnavbar重新取得購物車列表資料
-          vm.updateClientNav();
-          //更改進度到checkout
-          vm.goCheckStatus("checkout");
-          //成功時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
-          vm.$bus.$emit("message:push", response.data.message, "success");
-          //取得訂單id
-          vm.orderId = response.data.orderId;
-          //呼叫取得訂單資料
-          vm.getOrder();
-        } else {
-          //失敗時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
-          vm.$bus.$emit("message:push", response.data.message, "danger");
-        }
-      });
+      vm.$store.dispatch("cartModule/createOrder", vm.form);
     },
-    //取得訂單資料
-    getOrder() {
-      const vm = this;
-      const api = `${process.env.APIPATH}/api/${process.env.CUSTOMPATH}/order/${vm.orderId}`;
-      vm.isLoading = true; //開啟vue-loading-overlay的效果
-      this.$http.get(api).then(response => {
-        //用console.log檢查取回的資料格式
-        console.log(response.data);
-        vm.order = response.data.order; //存入data中的order
-        vm.isLoading = false; //關閉vue-loading-overlay的效果
-      });
-    },
+
     //建立執行付款功能，點選按鈕後post到付款api，並且重新取得訂單資訊
     payOrder() {
       const vm = this;
       const api = `${process.env.APIPATH}/api/${process.env.CUSTOMPATH}/pay/${vm.orderId}`;
-      vm.isLoading = true; //開啟vue-loading-overlay的效果
+      vm.$store.dispatch("updateLoading", true); //呼叫vuex的actions
       this.$http.post(api).then(response => {
-        //用console.log檢查取回的資料格式
-        console.log(response.data);
-        vm.isLoading = false; //關閉vue-loading-overlay的效果
+        vm.$store.dispatch("updateLoading", false); //呼叫vuex的actions
         if (response.data.success) {
-          //前往完成頁面
           vm.$router.push(`/success`);
+          vm.$store.dispatch("cartModule/clearOrderData");
         } else {
-          //失敗時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
-          vm.$bus.$emit("message:push", response.data.message, "danger");
+          vm.$store.dispatch("updateAlertMessage", {
+            message: response.data.message,
+            status: "danger"
+          });
         }
       });
     },
-    //以$refs方式呼叫設定ref="clientnavbar"的子元件，觸發該元件的getCart()
-    updateClientNav() {
-      this.$refs.clientnavbar.getCart();
-    },
-    //前往結帳階段
-    goCheckStatus(status) {
+
+    //changeStatus
+    changeStatus(status) {
       const vm = this;
-      vm.status.check = status;
+      vm.$store.dispatch("cartModule/changeStatus", status);
+      vm.goCheckStatus();
+    },
+
+    goCheckStatus() {
+      const vm = this;
+      const status = vm.status;
       if (status == "cart") {
         $("#collapseCart").collapse("show");
       } else {
         $("#collapseCart").collapse("hide");
       }
     },
+
     //回到前一頁
     goBack() {
       this.$router.back();
     }
   },
+
   created() {
-    this.getCart();
+    this.$store.dispatch("cartModule/getCart");
   }
 };
 </script>

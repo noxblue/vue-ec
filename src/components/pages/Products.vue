@@ -1,7 +1,7 @@
 <template>
   <div>
-    <!-- 加入loading標籤，表示在此元件插入vue-loading-overlay的元件，可看到是用變數isLoading控制，因此至data增加此變數 -->
-    <loading :active.sync="isLoading"></loading>
+    <!-- 加入loading標籤，表示在此元件插入vue-loading-overlay的元件，可看到是用變數isLoading控制，因此至data增加此變數
+    <loading :active.sync="isLoading"></loading> -->
     <div class="text-right mt-4">
       <!-- 使用bootstrap的modal開啟，可用原生的方法data-toggle="modal" data-target="#指定的ModalID"
       也可從文件中找尋Usage中的Methods，此處使用vue的按鍵觸發，並改以Vue的Methods控制開啟-->
@@ -256,9 +256,6 @@ export default {
         //另在上傳檔案的method中，啟動時改為true、ajax結束時改為false
         fileUploading: false
       },
-      //建立操控vue-loading-overlay的變數isLoading使其預設值為false，並在下方method中要加入的時刻更改其值即可
-      isLoading: false,
-
       //增加一個pagination資料為空物件，用來儲存getProducts透過axios取得的pagination(資料包含total_pages、current_page、has_pre、has_next)
       pagination: {}
     };
@@ -272,14 +269,16 @@ export default {
       const vm = this;
 
       //設定在還沒取的資料時，開啟vue-loading-overlay的效果（isLoading=true）
-      vm.isLoading = true;
+      // vm.isLoading = true;
+      vm.$store.dispatch('updateLoading',true)
 
       this.$http.get(api).then(response => {
         //用console.log檢查取回的資料格式
         console.log(response.data);
 
         //取得資料後就停止vue-loading-overlay的效果
-        vm.isLoading = false;
+        // vm.isLoading = false;
+        vm.$store.dispatch('updateLoading',false)
 
         //將取回資料中的products存入data中的products
         vm.products = response.data.products;
@@ -333,8 +332,12 @@ export default {
         if (response.data.success) {
           //關閉Modal
           $("#productModal").modal("hide");
-          //成功時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
-          vm.$bus.$emit("message:push", response.data.message, "success");
+          // //成功時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
+          // vm.$bus.$emit("message:push", response.data.message, "success");
+          vm.$store.dispatch("updateAlertMessage", {
+            message: response.data.message,
+            status: "success"
+          });
           //並執行產品列表更新
           vm.getProducts();
         } else {
@@ -345,8 +348,12 @@ export default {
           vm.getProducts();
           //增加跳console.log錯誤
           console.log(response.data.message);
-          //失敗時用eventbus呼叫AlertMessage，傳入訊息內容與Alert樣式
-          this.$bus.$emit("message:push", response.data.message, "danger");
+          // //失敗時用eventbus呼叫AlertMessage，傳入訊息內容與Alert樣式
+          // this.$bus.$emit("message:push", response.data.message, "danger");
+          vm.$store.dispatch("updateAlertMessage", {
+            message: response.data.message,
+            status: "danger"
+          });
         }
       });
     },
@@ -366,8 +373,12 @@ export default {
         if (response.data.success) {
           //關閉Modal
           $("#delProductModal").modal("hide");
-          //成功時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
-          vm.$bus.$emit("message:push", response.data.message, "success");
+          // //成功時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
+          // vm.$bus.$emit("message:push", response.data.message, "success");
+          vm.$store.dispatch("updateAlertMessage", {
+            message: response.data.message,
+            status: "success"
+          });
           //並執行產品列表更新
           vm.getProducts();
         } else {
@@ -377,8 +388,12 @@ export default {
           vm.getProducts();
           //增加跳console.log錯誤
           console.log(response.data.message);
-          //失敗時用eventbus呼叫AlertMessage，傳入訊息內容與Alert樣式
-          this.$bus.$emit("message:push", response.data.message, "danger");
+          // //失敗時用eventbus呼叫AlertMessage，傳入訊息內容與Alert樣式
+          // this.$bus.$emit("message:push", response.data.message, "danger");
+          vm.$store.dispatch("updateAlertMessage", {
+            message: response.data.message,
+            status: "danger"
+          });
         }
       });
     },
@@ -417,11 +432,19 @@ export default {
           if (response.data.success) {
             //要將網址存入tempProduct，但直接存會導致缺乏get、set等功能，無法雙向綁定，導致無法立即顯示，因此要改用vm.$set方式指定(目的地,位置(物件為參數),值)
             vm.$set(vm.tempProduct, "imageUrl", response.data.imageUrl);
-            //成功時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
-            vm.$bus.$emit("message:push", response.data.message, "success");
+            // //成功時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
+            // vm.$bus.$emit("message:push", response.data.message, "success");
+            vm.$store.dispatch("updateAlertMessage", {
+              message: response.data.message,
+              status: "success"
+            });
           } else {
-            //失敗時用eventbus呼叫AlertMessage，傳入訊息內容與Alert樣式
-            vm.$bus.$emit("message:push", response.data.message, "danger");
+            // //失敗時用eventbus呼叫AlertMessage，傳入訊息內容與Alert樣式
+            // vm.$bus.$emit("message:push", response.data.message, "danger");
+            vm.$store.dispatch("updateAlertMessage", {
+              message: response.data.message,
+              status: "danger"
+            });
           }
         });
     }

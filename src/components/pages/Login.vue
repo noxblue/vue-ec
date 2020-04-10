@@ -1,5 +1,6 @@
 <template>
   <div>
+    <loading :active.sync="isLoading"></loading>
     <div class="container mt-5">
       <div class="row justify-content-center"><img class="icon-img img-fluid" src="@/assets/icon.svg" alt=""/></div>
       <div class="row justify-content-center py-2"><h1>萌寵電商管理後台</h1></div>
@@ -40,6 +41,7 @@
 </template>
 
 <script>
+import {mapActions,mapGetters} from 'vuex';
 export default {
   name: "HelloWorld",
   data() {
@@ -51,6 +53,9 @@ export default {
       }
     };
   },
+  computed:{
+    ...mapGetters(['isLoading'])
+  },
   //在methods中設定login這個function
   methods: {
     signin() {
@@ -59,11 +64,13 @@ export default {
       //API文件有改為使用路徑/admin/signin，後端會需要將cookie存入瀏覽器，同時會進行驗證，故要到注入點main.js中加上axios的跨域處理（axios.defaults.withCredentials=true)
       const api = `${process.env.APIPATH}/admin/signin`;
       const vm = this;
+      vm.$store.dispatch('updateLoading',true)
       //使用post方法，後方加上傳遞的資料
       this.$http.post(api,vm.user).then(response => {
-        console.log(response.data);
+        // console.log(response.data);
         //使用router的方法，使登入成功時轉頁面至首頁
         if(response.data.success){
+          vm.$store.dispatch('updateLoading',false)
             vm.$router.push('/admin/products')
         }
       });

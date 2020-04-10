@@ -1,7 +1,9 @@
 <template>
   <div>
     <nav class="navbar navbar-expand-md navbar-light bg-primary">
-      <router-link class="nav-link text-light h4 mb-0" to="/"> <img class="icon-img" src="../assets/icon.svg" alt=""> 萌寵電商</router-link>
+      <router-link class="nav-link text-light h4 mb-0" to="/">
+        <img class="icon-img" src="../assets/icon.svg" alt /> 萌寵電商
+      </router-link>
       <button
         class="navbar-toggler"
         type="button"
@@ -27,7 +29,10 @@
             >
               <i class="fa fa-shopping-cart fa-2x d-md-block d-none"></i>
               <span class="text-center btn btn-light d-md-none d-block" style="font-size:16px;">購物清單</span>
-              <span class="badge badge-pill badge-danger cart-badge d-md-block d-none" v-if="cart.carts && cart.carts.length">{{cart.carts.length}}</span>
+              <span
+                class="badge badge-pill badge-danger cart-badge d-md-block d-none"
+                v-if="cart.carts && cart.carts.length"
+              >{{cart.carts.length}}</span>
             </a>
             <div
               class="dropdown-menu dropdown-menu-right px-3 py-0"
@@ -82,7 +87,9 @@
                 </tfoot>
               </table>
               <!-- 購物車為空顯示提示 -->
-              <div v-else class="text-center py-2"><span>購物車是空的唷！</span></div>
+              <div v-else class="text-center py-2">
+                <span>購物車是空的唷！</span>
+              </div>
             </div>
           </li>
           <li class="nav-item ml-md-2 ml-0">
@@ -95,56 +102,35 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
 export default {
   data() {
     return {
-      //用來儲存取回的購物車資訊
-      cart: {}
     };
   },
+  computed:{
+    ...mapGetters('cartModule',['cart'])
+  },
   methods: {
-    //取得購物車列表
-    getCart() {
-      //設定api路徑
-      const api = `${process.env.APIPATH}/api/${process.env.CUSTOMPATH}/cart`;
-      //要用data接資料前先設定vm=this，避免this的指向錯誤
-      const vm = this;
-      this.$http.get(api).then(response => {
-        //用console.log檢查取回的資料格式
-        console.log(response.data);
-        vm.cart = response.data.data; //存入data中的cart
-        console.log(vm.cart.carts.length)
-      });
-    },
     //刪除購物車項目(傳入要刪除項目的id)
     removeCartItem(id) {
-      //設定api路徑將id帶入
-      const api = `${process.env.APIPATH}/api/${process.env.CUSTOMPATH}/cart/${id}`;
-      //要用data接資料前先設定vm=this，避免this的指向錯誤
-      const vm = this;
-      this.$http.delete(api).then(response => {
-        //用console.log檢查取回的資料格式
-        console.log(response.data);
-        //刪除後重新取得購物車列表資料，重新渲染
-        vm.getCart();
-        //成功時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
-        vm.$bus.$emit("message:push", response.data.message, "success");
-      });
+      const vm = this
+      vm.$store.dispatch('cartModule/removeCartItem',id)
     }
   },
   created() {
-    this.getCart();
+    this.$store.dispatch('cartModule/getCart')
   }
 };
 </script>
 
 <style lang="scss" scoped>
-.cart-badge{
-    position: absolute;
-    bottom: 0;
-    right: 0;
+.cart-badge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
 }
-.icon-img{
+.icon-img {
   max-width: 30px;
   max-height: 30px;
 }

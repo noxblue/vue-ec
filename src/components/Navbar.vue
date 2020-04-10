@@ -30,7 +30,7 @@ export default {
       const vm = this;
       //使用post方法，api文件表示不需傳遞資料
       this.$http.post(api).then(response => {
-        console.log(response.data);
+        // console.log(response.data);
         //使用router的方法，使登入成功時轉頁面至login
         if (response.data.success) {
           vm.$router.push("/login");
