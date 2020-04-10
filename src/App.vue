@@ -18,14 +18,14 @@ export default {
     // const api = 'https://vue-course-api.herokuapp.com/api/charlesliu/products'
 
     //改將api路徑設定到config/dev.env.js的module.exports中，並使用process.env.參數名稱 取得設定資料
-    console.log(process.env.APIPATH, process.env.CUSTOMPATH);
+    // console.log(process.env.APIPATH, process.env.CUSTOMPATH);
     //使用ES6反引號設定變數字串內容，以${}的方式引用變數（即上述參數名稱）
-    const api = `${process.env.APIPATH}/api/${process.env.CUSTOMPATH}/products`;
+    // const api = `${process.env.APIPATH}/api/${process.env.CUSTOMPATH}/products`;
 
     //使用VueAxios的AJAX方法取得資料
-    this.$http.get(api).then(response => {
-      console.log(response.data);
-    });
+    // this.$http.get(api).then(response => {
+    //   console.log(response.data);
+    // });
   }
 };
 </script>

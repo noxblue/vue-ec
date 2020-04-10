@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Loading :active.sync="isLoading"></Loading>
+    <!-- <Loading :active.sync="isLoading"></Loading> -->
     <div class="text-right mt-3">
       <button class="btn btn-primary" @click="openCouponModal(true)">建立新的優惠券</button>
     </div>
@@ -169,7 +169,7 @@ export default {
   },
   data() {
     return {
-      isLoading: false, //判斷是否開啟loading效果
+      // isLoading: false, //判斷是否開啟loading效果
       pagination: "", //存分頁碼
       coupons: {}, //存取回的coupons
       tempCoupon: {
@@ -197,12 +197,14 @@ export default {
       //用axios取得訂單資訊，傳入開啟第幾頁page，預設值為1（會由pagination傳入）
       const vm = this;
       const api = `${process.env.APIPATH}/api/${process.env.CUSTOMPATH}/admin/coupons?page=${page}`;
-      vm.isLoading = true; //取資料時進入loading效果
+      // vm.isLoading = true; //取資料時進入loading效果
+      vm.$store.dispatch('updateLoading',true)
       this.$http.get(api).then(response => {
         console.log(response.data);
         vm.coupons = response.data.coupons; //coupon資料存入coupons進行渲染
         vm.pagination = response.data.pagination; //分頁資料存入pagination以傳給pagination元件渲染
-        vm.isLoading = false; //取完資料關閉loading效果
+        // vm.isLoading = false; //取完資料關閉loading效果
+        vm.$store.dispatch('updateLoading',false)
       });
       console.log("getCoupons");
     },
@@ -222,18 +224,30 @@ export default {
         api = `${process.env.APIPATH}/api/${process.env.CUSTOMPATH}/admin/coupon/${vm.tempCoupon.id}`;
         httpMethod = "put";
       }
-      vm.isLoading = true; //傳資料時進入loading效果
+      // vm.isLoading = true; //傳資料時進入loading效果
+      vm.$store.dispatch('updateLoading',true)
       this.$http[httpMethod](api, { data: vm.tempCoupon }).then(response => {
         console.log(response.data);
         if (response.data.success) {
           vm.getCoupons(); //更新完重新取得資料
-          vm.isLoading = false; //取完資料關閉loading效果
+          // vm.isLoading = false; //取完資料關閉loading效果
+          vm.$store.dispatch('updateLoading',false)
           $("#couponModal").modal("hide"); //關閉Modal
-          //成功時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
-          vm.$bus.$emit("message:push", response.data.message, "success");
+          // //成功時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
+          // vm.$bus.$emit("message:push", response.data.message, "success");
+          //改用vuex呼叫alertMessage
+          vm.$store.dispatch("updateAlertMessage", {
+            message: response.data.message,
+            status: "success"
+          });
         } else {
-          //失敗時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
-          vm.$bus.$emit("message:push", response.data.message, "danger");
+          // //失敗時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
+          // vm.$bus.$emit("message:push", response.data.message, "danger");
+          //改用vuex呼叫alertMessage
+          vm.$store.dispatch("updateAlertMessage", {
+            message: response.data.message,
+            status: "danger"
+          });
         }
       });
       console.log("updateCoupon");
@@ -248,17 +262,27 @@ export default {
     delCoupon() {
       const vm = this;
       const api = `${process.env.APIPATH}/api/${process.env.CUSTOMPATH}/admin/coupon/${vm.tempCoupon.id}`;
-      vm.isLoading = true; //傳資料時進入loading效果
+      // vm.isLoading = true; //傳資料時進入loading效果
+      vm.$store.dispatch('updateLoading',true)
       this.$http.delete(api).then(response => {
         console.log(response.data);
-        vm.getCoupons();  //刪除完重新取得coupons資料
-        vm.isLoading = false; //傳完資料關閉loading效果
+        vm.getCoupons(); //刪除完重新取得coupons資料
+        // vm.isLoading = false; //傳完資料關閉loading效果
+        vm.$store.dispatch('updateLoading',false)
         $("#delCouponModal").modal("hide"); //關閉Modal
         if (response.data.success) {
-          //成功時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
-          vm.$bus.$emit("message:push", response.data.message, "success");
+          // //成功時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
+          // vm.$bus.$emit("message:push", response.data.message, "success");
+          vm.$store.dispatch("updateAlertMessage", {
+            message: response.data.message,
+            status: "success"
+          });
         } else {
-          vm.$bus.$emit("message:push", response.data.message, "danger");
+          // vm.$bus.$emit("message:push", response.data.message, "danger");
+          vm.$store.dispatch("updateAlertMessage", {
+            message: response.data.message,
+            status: "danger"
+          });
         }
       });
     }

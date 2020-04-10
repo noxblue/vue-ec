@@ -1,21 +1,35 @@
 <template>
   <div>
+    <loading :active.sync="isLoading"></loading>
     <ClientNavbar></ClientNavbar>
-    <div class="container-fluid flex-column hero-image bg-cover d-flex justify-content-center align-items-center">
-        <div><span class="hero-text text-white">您已經付款完成囉！</span></div>
-        <div><router-link to="/" class="btn btn-info">回到首頁繼續購物</router-link></div>
+    <Alert></Alert>
+    <div
+      class="container-fluid flex-column hero-image bg-cover d-flex justify-content-center align-items-center"
+    >
+      <div>
+        <span class="hero-text text-white">您已經付款完成囉！</span>
+      </div>
+      <div>
+        <router-link to="/" class="btn btn-info">回到首頁繼續購物</router-link>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import ClientNavbar from "../ClientNavbar";
+import Alert from "../AlertMessage";
+import { mapGetters, mapActions } from "vuex";
 export default {
   components: {
-    ClientNavbar
+    ClientNavbar,
+    Alert
   },
   data() {
     return {};
+  },
+  computed: {
+    ...mapGetters(["isLoading"])
   }
 };
 </script>

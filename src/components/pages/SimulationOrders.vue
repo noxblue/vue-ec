@@ -366,8 +366,12 @@ export default {
         //關閉Modal（如果有開啟的話）
         $("#productModal").modal("hide");
         //上方加入購物車按鈕處再加上觸發與傳送值即可執行本function
-        //成功時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
-        vm.$bus.$emit("message:push", response.data.message, "success");
+        // //成功時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
+        // vm.$bus.$emit("message:push", response.data.message, "success");
+        vm.$store.dispatch("updateAlertMessage", {
+          message: response.data.message,
+          status: "success"
+        });
         //最後重新取得購物車資料並重新渲染
         vm.getCart();
       });
@@ -398,8 +402,12 @@ export default {
         console.log(response.data);
         //刪除後重新取得購物車列表資料，重新渲染
         vm.getCart();
-        //成功時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
-        vm.$bus.$emit("message:push", response.data.message, "success");
+        // //成功時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
+        // vm.$bus.$emit("message:push", response.data.message, "success");
+        vm.$store.dispatch("updateAlertMessage", {
+          message: response.data.message,
+          status: "success"
+        });
       });
     },
     //使用者送出使用優惠碼時執行傳送code給API
@@ -415,11 +423,19 @@ export default {
         //用console.log檢查取回的資料格式
         console.log(response.data);
         if (response.data.success) {
-          //成功時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
-          vm.$bus.$emit("message:push", response.data.message, "success");
+          // //成功時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
+          // vm.$bus.$emit("message:push", response.data.message, "success");
+          vm.$store.dispatch("updateAlertMessage", {
+            message: response.data.message,
+            status: "success"
+          });
         } else {
-          //失敗時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
-          vm.$bus.$emit("message:push", response.data.message, "danger");
+          // //失敗時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
+          // vm.$bus.$emit("message:push", response.data.message, "danger");
+          vm.$store.dispatch("updateAlertMessage", {
+            message: response.data.message,
+            status: "danger"
+          });
         }
         //重新取得購物車列表資料，重新渲染(成功時API資料庫cart的資料會改，重新取得以重新渲染)
         vm.getCart();
@@ -454,8 +470,12 @@ export default {
         vm.getCart();
         //送出訂單後跳轉至CheckoutSimOrder頁面，且帶入axios取得的orderId
         this.$router.push(`/checkout_sim_order/${response.data.orderId}`);
-        //成功時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
-        vm.$bus.$emit("message:push", response.data.message, "success");
+        // //成功時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
+        // vm.$bus.$emit("message:push", response.data.message, "success");
+        vm.$store.dispatch("updateAlertMessage", {
+          message: response.data.message,
+          status: "success"
+        });
       });
     }
   },

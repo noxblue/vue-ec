@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Loading :active.sync="isLoading"></Loading>
+    <!-- <Loading :active.sync="isLoading"></Loading> -->
     <table class="table mt-4">
       <thead>
         <tr>
@@ -153,7 +153,7 @@ export default {
   data() {
     return {
       //建立操控vue-loading-overlay的變數isLoading使其預設值為false，並在下方method中要加入的時刻更改其值即可
-      isLoading: false,
+      // isLoading: false,
       //建立用來接收訂單資訊的變數orders
       orders: [],
       //接收訂單的分頁資訊
@@ -170,12 +170,14 @@ export default {
       //用axios取得訂單資訊，傳入開啟第幾頁page，預設值為1（會由pagination傳入）
       const vm = this;
       const api = `${process.env.APIPATH}/api/${process.env.CUSTOMPATH}/admin/orders?page=${page}`;
-      vm.isLoading = true; //取資料時進入loading效果
+      // vm.isLoading = true; //取資料時進入loading效果
+      vm.$store.dispatch('updateLoading',true)
       this.$http.get(api).then(response => {
         console.log(response.data);
         vm.orders = response.data.orders; //訂單資料存入orders進行渲染
         vm.pagination = response.data.pagination; //分頁資料存入pagination以傳給pagination元件渲染
-        vm.isLoading = false; //取完資料關閉loading效果
+        // vm.isLoading = false; //取完資料關閉loading效果
+        vm.$store.dispatch('updateLoading',false)
       });
     },
     //將單筆訂單資料傳入開啟編輯訂單Modal
@@ -196,24 +198,34 @@ export default {
     editOrder() {
       const vm = this;
       const api = `${process.env.APIPATH}/api/${process.env.CUSTOMPATH}/admin/order/${vm.tempOrder.id}`;
-      vm.isLoading = true;
+      // vm.isLoading = true;
+      vm.$store.dispatch('updateLoading',true)
       //使用put方式修改訂單
       this.$http.put(api, { data: vm.tempOrder }).then(response => {
         console.log(response.data.message);
         if (response.data.success) {
           //重新取得訂單資料(要放在axios中，否則在api跑完前就會先執行，會拿到舊的資料)
           vm.getOrders();
-          vm.isLoading = false;
+          // vm.isLoading = false;
+          vm.$store.dispatch('updateLoading',false)
           //關閉Modal
           $("#orderModal").modal("hide");
-          //成功時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
-          vm.$bus.$emit("message:push", response.data.message, "success");
-        }else{
-          //失敗時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
-          vm.$bus.$emit("message:push", response.data.message, "danger");
+          // //成功時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
+          // vm.$bus.$emit("message:push", response.data.message, "success");
+          vm.$store.dispatch("updateAlertMessage", {
+            message: response.data.message,
+            status: "success"
+          });
+        } else {
+          // //失敗時用evenbus呼叫AlertMessage，傳入訊息內容與Alert樣式
+          // vm.$bus.$emit("message:push", response.data.message, "danger");
+          vm.$store.dispatch("updateAlertMessage", {
+            message: response.data.message,
+            status: "danger"
+          });
         }
       });
-    },
+    }
   },
   computed: {
     //產生排序內容，依照已付款與未付款進行排序，使其排序為已付款->未付款

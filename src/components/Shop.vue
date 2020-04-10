@@ -1,5 +1,8 @@
 <template>
   <div>
+    <!-- 因為使用vuex管理isLoading狀態，因此將Loading加在頁面最外層即可 -->
+    <!-- 加入loading標籤，表示在此元件插入vue-loading-overlay的元件，可看到是用變數isLoading控制，因此至data增加此變數 -->
+    <loading :active.sync="isLoading"></loading>
     <!-- 為ClientNavbar設定ref名稱，使此父元件function可用此名稱透過$refs方法呼叫此子元件的function -->
     <ClientNavbar ref="clientnavbar"></ClientNavbar>
     <!-- 設定Alert元件顯示位置 -->
@@ -12,8 +15,7 @@
       </div>
     </div>
     <!-- 設定ActiveProducts的觸發事件updateCart，當此子元件以$emit觸發updateCart事件時，觸發此父元件的updateClientNav() -->
-    <ActiveProducts @updateCart="updateClientNav"></ActiveProducts>
-    
+    <ActiveProducts></ActiveProducts>
   </div>
 </template>
 
@@ -22,23 +24,25 @@ import ClientNavbar from "./ClientNavbar";
 //導入AlertMessage，以供子元件進行呼叫
 import Alert from "./AlertMessage";
 import ActiveProducts from "./pages/ActiveProducts";
-
+import {mapGetters,mapActions} from 'vuex'
 
 export default {
   components: {
     ClientNavbar,
     Alert,
-    ActiveProducts,
-
+    ActiveProducts
   },
   data() {
     return {};
   },
   methods: {
-    //以$refs方式呼叫設定ref="clientnavbar"的子元件，觸發該元件的getCart()
-    updateClientNav() {
-      this.$refs.clientnavbar.getCart();
-    }
+    // //以$refs方式呼叫設定ref="clientnavbar"的子元件，觸發該元件的getCart()
+    // updateClientNav() {
+    //   this.$refs.clientnavbar.getCart();
+    // }
+  },
+  computed:{
+    ...mapGetters(['isLoading'])
   }
 };
 </script>
